@@ -242,9 +242,10 @@ body.dark-mode textarea{
 <div class="sub">47 Sets • 20 प्रश्न प्रति Set • कुल 940 प्रश्न • गलत उत्तर स्वतः Saved</div>
 <div class="controls">
 
-<select id="setSelect"></select>
+<button class="primary" id="startMcqQuizBtn" onclick="startMCQQuiz()">Start MCQ Quiz</button>
+<select id="setSelect" aria-label="Select Set"></select>
 
-<button class="primary" onclick="showQuiz()">Quiz</button>
+<button onclick="showQuiz()">Quiz</button>
 <button onclick="showSaved()">Saved / Wrong <span id="savedCount" class="badge">0</span></button>
 <button onclick="clearSaved()" class="danger">Clear All Saved</button>
 <button onclick="toggleBanner()" id="bannerToggle">Hide Banner</button>
@@ -332,6 +333,13 @@ function goToSet(n){
 }
 function previousSet(){ goToSet(currentSet-1); }
 function nextSet(){ goToSet(currentSet+1); }
+function startMCQQuiz(){
+  const selector=document.getElementById("setSelect");
+  if(selector && typeof currentSet!=="undefined") selector.value=String(currentSet||1);
+  showQuiz();
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+
 function showQuiz(){
   updateBottomSetNav();
   mode="quiz"; currentSet=Number(document.getElementById("setSelect").value);
