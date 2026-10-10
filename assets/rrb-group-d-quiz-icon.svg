@@ -14,6 +14,8 @@
   <path d="M108 224h296l-20 28H128z" fill="url(#gold)"/>
   <text x="256" y="292" font-family="Arial, Helvetica, sans-serif" font-size="48" font-weight="900" text-anchor="middle" fill="#FFFFFF" stroke="#06336D" stroke-width="2" paint-order="stroke">RRB GROUP D</text>
   <text x="256" y="334" font-family="Arial, Helvetica, sans-serif" font-size="27" font-weight="800" text-anchor="middle" fill="#FFE08A">ALL 47 SHIFTS</text>
+  <rect x="190" y="343" width="132" height="31" rx="12" fill="#F5B83D"/>
+  <text x="256" y="365" font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="900" text-anchor="middle" fill="#073B8C">2026</text>
   <text x="256" y="371" font-family="Arial, Helvetica, sans-serif" font-size="24" font-weight="800" text-anchor="middle" fill="#FFFFFF">CURRENT AFFAIRS</text>
   <g transform="translate(110 390)">
     <path d="M0 14 Q38 -2 76 14 V69 Q38 53 0 69Z" fill="#FFFFFF" stroke="#F5B83D" stroke-width="4"/>
