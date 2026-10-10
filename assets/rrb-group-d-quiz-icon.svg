@@ -22,6 +22,6 @@
     <path d="M16 27h43M16 39h43M92 27h43M92 39h43" stroke="#1565C0" stroke-width="4" stroke-linecap="round"/>
   </g>
   <rect x="280" y="405" width="126" height="57" rx="15" fill="#2EAF62" stroke="#FFFFFF" stroke-width="3"/>
-  <text x="343" y="430" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="900" text-anchor="middle" fill="#FFFFFF">MCQ</text>
-  <text x="343" y="451" font-family="Arial, Helvetica, sans-serif" font-size="18" font-weight="900" text-anchor="middle" fill="#FFFFFF">FREE</text>
+  <text x="343" y="430" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="900" text-anchor="middle" fill="#FFFFFF">FREE QUIZ</text>
+  <text x="343" y="451" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="900" text-anchor="middle" fill="#FFFFFF">ATTEMPT</text>
 </svg>
