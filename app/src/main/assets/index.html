@@ -345,7 +345,7 @@ function showQuiz(){
   mode="quiz"; currentSet=Number(document.getElementById("setSelect").value);
   updateSetNav();
   const s=getSet(currentSet);
-  const qs=s.questions.filter(q=>!saved[q.id]);
+  const qs=s.questions;
   renderQuestions(qs, `Set ${currentSet}`, true);
 }
 function showSaved(){
@@ -357,7 +357,7 @@ function showSaved(){
 function renderQuestions(qs,title,quizMode){
   const app=document.getElementById("app");
   document.getElementById("stats").textContent = quizMode
-    ? `${title}: ${qs.length} unsaved questions बाकी • Saved questions normal quiz से हटाए गए हैं।`
+    ? `${title}: ${qs.length} questions`
     : `Saved/Wrong: ${qs.length} questions`;
   document.getElementById("progressBar").style.width = "0%";
 
@@ -420,7 +420,7 @@ function singleNextQuestion(){
   if(window.singleQuizIndex<qs.length-1){window.singleQuizIndex++;renderSingleQuizQuestion();window.scrollTo({top:0,behavior:"smooth"});}
 }
 function questionHTML(q,idx,quizMode){
-  const setText = q.set ? ` <span class="badge">Set ${q.set}</span>` : "";
+  const setText = "";
   const opts = ["A","B","C","D"].map(L=>`<button class="option" data-qid="${q.id}" data-opt="${L}" onclick="answer(this,'${q.id}','${L}','${q.answer}')">${L}. ${escapeHtml(q.options[L])}</button>`).join("");
   return `<div class="card" id="card_${q.id}">
     <div class="qtitle">Q.${q.qno}${setText} ${escapeHtml(q.question)}</div>
@@ -446,9 +446,25 @@ function answer(btn,id,chosen,correct){
     saved[id]={savedAt:Date.now(),lastWrong:chosen};
     saveStore();
     fb.classList.add("show");
-    fb.innerHTML=`<span style="color:var(--red);font-weight:700">✗ गलत उत्तर</span><br>सही उत्तर: <b style="color:var(--green)">${correct}. ${escapeHtml(findQuestion(id).options[correct])}</b><br><span class="small">यह प्रश्न Saved/Wrong में स्वतः जोड़ दिया गया है और normal quiz से हटा दिया गया है।</span>`;
+    fb.innerHTML=`<span style="color:var(--red);font-weight:700">✗ गलत उत्तर</span><br>सही उत्तर: <b style="color:var(--green)">${correct}. ${escapeHtml(findQuestion(id).options[correct])}</b><br><span class="small">यह प्रश्न Saved/Wrong में सेव किया गया है। यह अपने मूल Set में बना रहेगा।</span>`;
   }
   updateProgress();
+  if(mode==="quiz"){
+    const q=findQuestion(id);
+    if(q){
+      let attempted={};
+      try{attempted=JSON.parse(localStorage.getItem("rrb_groupd_attempted_v1")||"{}")}catch(e){}
+      const before=(getSet(currentSet).questions||[]).filter(x=>attempted[x.id]).length;
+      attempted[id]=true;
+      localStorage.setItem("rrb_groupd_attempted_v1",JSON.stringify(attempted));
+      const all=getSet(currentSet).questions||[];
+      const done=all.filter(x=>attempted[x.id]).length;
+      if(before<all.length && done===all.length && currentSet<DATA.length){
+        const finishedSet=currentSet;
+        setTimeout(()=>{if(mode==="quiz" && currentSet===finishedSet) goToSet(finishedSet+1);},900);
+      }
+    }
+  }
 }
 function findQuestion(id){
   for(const s of DATA) for(const q of s.questions) if(q.id===id) return q;
@@ -474,8 +490,37 @@ function updateProgress(){
 function escapeHtml(s){
   return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]));
 }
+function topicForQuestion(q){
+  const t=(q.question+" "+Object.values(q.options||{}).join(" ")).toLowerCase();
+  const groups=[
+    ["Economy & Banking",/rbi|bank|बैंक|अर्थव्यवस्था|मौद्रिक|मुद्रास्फीति|gdp|sebi|nabard|वित्त|कर/],
+    ["Science & Technology",/isro|drdo|c-dot|विज्ञान|प्रौद्योगिकी|technology|research|अनुसंधान|अंतरिक्ष|telecom|दूरसंचार|ai /],
+    ["Politics & Governance",/मंत्रालय|मंत्री|सरकार|योजना|आयोग|संसद|राष्ट्रपति|राज्यपाल|नीति|governance|parliament/],
+    ["International Affairs",/usa|iran|संयुक्त राष्ट्र|united nations|विश्व बैंक|world bank|अंतरराष्ट्रीय|summit|जलडमरूमध्य|strait|देशों के बीच/],
+    ["Environment & Disaster",/पर्यावरण|जलवायु|वन्यजीव|वन|प्रदूषण|चक्रवात|बाढ़|भूकंप|climate|wildlife|disaster/],
+    ["Sports",/खेल|क्रिकेट|हॉकी|ओलंपिक|olympic|fifa|खिलाड़ी|टूर्नामेंट|कप प्रतियोगिता/],
+    ["Awards & Culture",/पुरस्कार|सम्मान|award|prize|संस्कृति|कला|साहित्य|पुस्तक|festival|unesco/]
+  ];
+  for(const [name,re] of groups) if(re.test(t)) return name;
+  return "Other Current Affairs";
+}
+function showTopicWise(){
+  const topics=[...new Set(DATA.flatMap(s=>s.questions.map(topicForQuestion)))].sort();
+  const choice=prompt("Topic-wise practice के लिए विषय चुनें:\n"+topics.map((x,i)=>(i+1)+". "+x).join("\n")+"\n\nविषय का नाम लिखें:");
+  if(!choice)return;
+  const wanted=topics.find(x=>x.toLowerCase()===choice.trim().toLowerCase())||topics.find(x=>x.toLowerCase().includes(choice.trim().toLowerCase()));
+  if(!wanted){alert("यह विषय नहीं मिला। सूची में से कोई विषय लिखें।");return;}
+  mode="topic";
+  const qs=DATA.flatMap(s=>s.questions.map(q=>({...q,set:s.set}))).filter(q=>topicForQuestion(q)===wanted);
+  document.getElementById("stats").textContent="Topic-wise: "+wanted+" • "+qs.length+" questions";
+  window.singleQuizQuestions=qs; window.singleQuizIndex=0; renderSingleQuizQuestion();
+}
 populateSets();
 const __setSelector = document.getElementById("setSelect");
+if(__setSelector && __setSelector.parentElement && !document.getElementById("topicWiseBtn")){
+  const topicBtn=document.createElement("button");topicBtn.id="topicWiseBtn";topicBtn.type="button";topicBtn.textContent="Topic-wise Practice";topicBtn.style.margin="6px";topicBtn.onclick=showTopicWise;
+  __setSelector.parentElement.appendChild(topicBtn);
+}
 if(__setSelector){
   __setSelector.addEventListener("change", function(){
     const n=Number(this.value);
